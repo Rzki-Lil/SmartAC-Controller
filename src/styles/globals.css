@@ -1,0 +1,189 @@
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/src/assets/fonts/Montserrat-Regular.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/src/assets/fonts/Montserrat-Medium.ttf') format('truetype');
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/src/assets/fonts/Montserrat-Bold.ttf') format('truetype');
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Montserrat';
+  src: url('/src/assets/fonts/Montserrat-ExtraBold.ttf') format('truetype');
+  font-weight: 800;
+  font-style: normal;
+  font-display: swap;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer components {
+  /* Button Styles */
+  .btn {
+    @apply px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-300;
+  }
+  
+  .btn-primary {
+    @apply btn bg-blue-500 text-white hover:bg-blue-600;
+  }
+
+  .btn-power {
+    @apply w-12 h-12 md:w-16 md:h-16 rounded-full border-4 transition-all duration-300 
+           flex items-center justify-center;
+  }
+
+  .btn-power-on {
+    @apply border-green-500 text-green-500 hover:bg-green-500 hover:text-white;
+  }
+
+  .btn-power-off {
+    @apply border-red-500 text-red-500 hover:bg-red-500 hover:text-white;
+  }
+
+  /* Card Styles */
+  .card {
+    @apply bg-black text-white p-2 sm:p-3 md:p-4 rounded-lg w-full;
+  }
+
+  .card-control {
+    @apply card space-y-1.5 sm:space-y-2 md:space-y-3;
+  }
+
+  .card-temperature {
+    @apply card p-2 sm:p-3 md:p-4;
+  }
+
+  .card-mode {
+    @apply card;
+  }
+
+  /* Controls Layout */
+  .controls-container {
+    @apply space-y-2 sm:space-y-3 md:space-y-4 transition-opacity duration-300;
+  }
+
+  .controls-disabled {
+    @apply opacity-50 pointer-events-none;
+  }
+
+  .controls-grid {
+    @apply grid grid-cols-2 md:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-3 md:gap-4;
+  }
+
+  /* Mode buttons container */
+  .mode-buttons-container {
+    @apply grid grid-cols-3 gap-1 sm:gap-2 md:gap-3;
+  }
+
+  /* Fan buttons container */
+  .fan-buttons-container {
+    @apply grid grid-cols-3 gap-1 sm:gap-2 md:gap-3;
+  }
+
+  /* Button sizes */
+  .control-button {
+    @apply w-full aspect-square flex items-center justify-center 
+           text-base sm:text-lg md:text-xl;
+  }
+
+  /* Temperature buttons */
+  .temp-button {
+    @apply p-1 sm:p-1.5 md:p-2 hover:bg-gray-800 rounded-full disabled:opacity-50
+           w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 
+           flex items-center justify-center;
+  }
+
+  /* Toggle button */
+  .toggle-button {
+    @apply w-10 sm:w-12 md:w-14 h-5 sm:h-6 md:h-7 
+           bg-gray-600 rounded-full relative;
+  }
+
+  .toggle-button-slider {
+    @apply absolute w-4 sm:w-5 md:w-6 h-4 sm:h-5 md:h-6 
+           bg-white rounded-full top-0.5 
+           transition-all duration-300;
+  }
+
+  /* Bottom bar styles */
+  .bottom-bar {
+    @apply bg-black text-white py-4 px-4 md:px-12 lg:px-24 xl:px-32 2xl:px-[100px] mt-8;
+  }
+
+  .social-link {
+    @apply flex items-center gap-2 hover:text-teal-500 transition-colors duration-300;
+  }
+}
+
+@layer base {
+  body {
+    @apply font-montserrat bg-gradient-to-b from-cyan-50 to-white;
+  }
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease-out forwards;
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.8s ease-out forwards;
+}
+
+.animate-spin-slow {
+  animation: spin 3s linear infinite;
+}
+
+.animate-spin-medium {
+  animation: spin 1.5s linear infinite;
+}
+
+.animate-spin-fast {
+  animation: spin 0.5s linear infinite;
+}
+
+@layer utilities {
+  .blur-3xl {
+    --tw-blur: blur(64px);
+    filter: var(--tw-blur);
+  }
+} 
