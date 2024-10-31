@@ -1,7 +1,7 @@
 {
   "files": {
     "main.css": "/SmartAC-Controller/static/css/main.e909ba84.css",
-    "main.js": "/SmartAC-Controller/static/js/main.a8a602f8.js",
+    "main.js": "/SmartAC-Controller/static/js/main.4439a6f6.js",
     "static/media/Montserrat-ExtraBold.ttf": "/SmartAC-Controller/static/media/Montserrat-ExtraBold.6c8b198832c88c649faa.ttf",
     "static/media/Montserrat-Bold.ttf": "/SmartAC-Controller/static/media/Montserrat-Bold.50f0257aa1e905f4bfaf.ttf",
     "static/media/Montserrat-Medium.ttf": "/SmartAC-Controller/static/media/Montserrat-Medium.b8c6753baa964ccac1ba.ttf",
@@ -10,10 +10,10 @@
     "static/media/ac1.png": "/SmartAC-Controller/static/media/ac1.73a62847654267d25e30.png",
     "index.html": "/SmartAC-Controller/index.html",
     "main.e909ba84.css.map": "/SmartAC-Controller/static/css/main.e909ba84.css.map",
-    "main.a8a602f8.js.map": "/SmartAC-Controller/static/js/main.a8a602f8.js.map"
+    "main.4439a6f6.js.map": "/SmartAC-Controller/static/js/main.4439a6f6.js.map"
   },
   "entrypoints": [
     "static/css/main.e909ba84.css",
-    "static/js/main.a8a602f8.js"
+    "static/js/main.4439a6f6.js"
   ]
 }
