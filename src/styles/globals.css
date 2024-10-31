@@ -35,7 +35,6 @@
 @tailwind utilities;
 
 @layer components {
-  /* Button Styles */
   .btn {
     @apply px-3 py-2 md:px-4 md:py-2 rounded-lg font-medium transition-all duration-300;
   }
@@ -57,26 +56,70 @@
     @apply border-red-500 text-red-500 hover:bg-red-500 hover:text-white;
   }
 
-  /* Card Styles */
   .card {
-    @apply bg-black text-white p-2 sm:p-3 md:p-4 rounded-lg w-full;
+    @apply bg-black text-white p-3 sm:p-4 rounded-lg w-full 
+           transform transition-all duration-300;
   }
 
-  .card-control {
-    @apply card space-y-1.5 sm:space-y-2 md:space-y-3;
+  .card:hover {
+    @apply -translate-y-0.5 shadow-lg;
+  }
+
+  .temperature-text {
+    @apply font-bold relative;
+    background: linear-gradient(
+      to right,
+      rgb(59, 130, 246) 0%, 
+      rgb(139, 92, 246) 50%,
+      rgb(239, 68, 68) 100% 
+    );
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    transition: all 0.3s ease;
+  }
+
+  .temperature-text::after {
+    content: '';
+    @apply absolute inset-0 blur-lg opacity-20;
+    background: var(--temp-glow-color);
+    z-index: -1;
+    transition: all 0.3s ease;
+  }
+
+  .swing-card {
+    @apply bg-black text-white p-3 sm:p-4 rounded-lg w-full 
+           transform transition-all duration-300
+           flex flex-col items-center justify-center py-6;
+  }
+
+  .swing-toggle-container {
+    @apply flex flex-col items-center gap-2;
+  }
+
+  .swing-toggle {
+    @apply w-16 sm:w-20 h-8 sm:h-10 rounded-full relative transition-all duration-300;
+  }
+
+  .swing-toggle-slider {
+    @apply absolute w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full 
+           shadow-md transition-all duration-300;
+    top: 50%;
+    transform: translateY(-50%);
   }
 
   .card-temperature {
-    @apply card p-2 sm:p-3 md:p-4;
+    @apply bg-black text-white p-2 sm:p-3 md:p-4 rounded-lg w-full 
+           transform transition-all duration-300;
   }
 
   .card-mode {
-    @apply card;
+    @apply bg-black text-white p-3 sm:p-4 rounded-lg w-full 
+           transform transition-all duration-300;
   }
 
-  /* Controls Layout */
   .controls-container {
-    @apply space-y-2 sm:space-y-3 md:space-y-4 transition-opacity duration-300;
+    @apply space-y-2 sm:space-y-3 transition-opacity duration-300;
   }
 
   .controls-disabled {
@@ -87,30 +130,47 @@
     @apply grid grid-cols-2 md:grid-cols-2 lg:grid-cols-1 gap-2 sm:gap-3 md:gap-4;
   }
 
-  /* Mode buttons container */
   .mode-buttons-container {
-    @apply grid grid-cols-3 gap-1 sm:gap-2 md:gap-3;
+    @apply flex flex-wrap justify-center gap-3 sm:gap-4;
   }
 
-  /* Fan buttons container */
   .fan-buttons-container {
-    @apply grid grid-cols-3 gap-1 sm:gap-2 md:gap-3;
+    @apply flex justify-center gap-3 sm:gap-4;
   }
 
-  /* Button sizes */
   .control-button {
-    @apply w-full aspect-square flex items-center justify-center 
-           text-base sm:text-lg md:text-xl;
+    @apply w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+           flex items-center justify-center 
+           rounded-full transition-all duration-300;
   }
 
-  /* Temperature buttons */
+  .control-button.active {
+    @apply bg-white text-black;
+  }
+
+  .control-button:not(.active):not(:disabled) {
+    @apply hover:bg-gray-800 hover:scale-105;
+  }
+
+  .control-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
   .temp-button {
-    @apply p-1 sm:p-1.5 md:p-2 hover:bg-gray-800 rounded-full disabled:opacity-50
-           w-8 h-8 sm:w-10 sm:h-10 md:w-12 md:h-12 
-           flex items-center justify-center;
+    @apply w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16
+           flex items-center justify-center 
+           rounded-full transition-all duration-300
+           bg-gray-900;
   }
 
-  /* Toggle button */
+  .temp-button:not(:disabled):hover {
+    @apply bg-gray-800 scale-105;
+  }
+
+  .temp-button:disabled {
+    @apply opacity-50 cursor-not-allowed;
+  }
+
   .toggle-button {
     @apply w-10 sm:w-12 md:w-14 h-5 sm:h-6 md:h-7 
            bg-gray-600 rounded-full relative;
@@ -122,13 +182,42 @@
            transition-all duration-300;
   }
 
-  /* Bottom bar styles */
-  .bottom-bar {
-    @apply bg-black text-white py-4 px-4 md:px-12 lg:px-24 xl:px-32 2xl:px-[100px] mt-8;
+  .footer-fixed {
+    @apply bg-black text-white py-4 w-full z-50 mt-auto border-t border-gray-800;
+    margin-bottom: 0;
+    margin-top: 30px;
   }
 
   .social-link {
     @apply flex items-center gap-2 hover:text-teal-500 transition-colors duration-300;
+  }
+
+  .temperature-text {
+    @apply font-bold transition-colors duration-300;
+    background: linear-gradient(to right, #3b82f6, #60a5fa, #93c5fd);
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+    opacity: var(--temp-opacity);
+  }
+
+  .swing-card {
+    @apply card flex flex-col items-center justify-center py-6;
+  }
+
+  .swing-toggle-container {
+    @apply flex flex-col items-center gap-2;
+  }
+
+  .swing-toggle {
+    @apply w-16 sm:w-20 h-8 sm:h-10 rounded-full relative transition-all duration-300;
+  }
+
+  .swing-toggle-slider {
+    @apply absolute w-6 sm:w-8 h-6 sm:h-8 bg-white rounded-full 
+           shadow-md transition-all duration-300;
+    top: 50%;
+    transform: translateY(-50%);
   }
 }
 
@@ -170,15 +259,15 @@
 }
 
 .animate-spin-slow {
-  animation: spin 3s linear infinite;
+  animation: spin 2s linear infinite;
 }
 
 .animate-spin-medium {
-  animation: spin 1.5s linear infinite;
+  animation: spin 1s linear infinite;
 }
 
 .animate-spin-fast {
-  animation: spin 0.5s linear infinite;
+  animation: spin 0.6s linear infinite;
 }
 
 @layer utilities {
@@ -186,4 +275,27 @@
     --tw-blur: blur(64px);
     filter: var(--tw-blur);
   }
-} 
+}
+
+
+@keyframes pulseScale {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.animate-pulse-scale {
+  animation: pulseScale 2s ease-in-out infinite;
+}
+
+.main-content {
+  @apply flex-grow;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.min-h-screen {
+  min-height: 100vh;
+  @apply flex flex-col;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
