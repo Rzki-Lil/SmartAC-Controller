@@ -20,6 +20,105 @@ import { FaWhatsapp, FaGithub, FaTiktok } from "react-icons/fa";
 import LoginButton from "../../components/LoginButton";
 import { auth } from "../../firebase/config";
 
+const TimePickerInput = ({ value, onChange, label, disabled }) => {
+  const [hours, minutes] = value.split(":").map(Number);
+
+  const hoursOptions = Array.from({ length: 24 }, (_, i) => ({
+    value: i,
+    display: String(i).padStart(2, "0"),
+  }));
+
+  const minutesOptions = Array.from({ length: 60 }, (_, i) => {
+    const mins = i * 1;
+    return {
+      value: mins,
+      display: String(mins).padStart(2, "0"),
+    };
+  });
+
+  const handleTimeChange = (type, newValue) => {
+    const newHours = type === "hours" ? newValue : hours;
+    const newMinutes = type === "minutes" ? newValue : minutes;
+    const formattedTime = `${String(newHours).padStart(2, "0")}:${String(
+      newMinutes
+    ).padStart(2, "0")}`;
+    onChange(formattedTime);
+  };
+
+  return (
+    <div className="flex flex-col gap-2">
+      <label className="text-xs text-center text-gray-500 sm:text-sm">
+        {label}
+      </label>
+
+      <div className="flex items-center justify-center gap-2">
+        {/* Hours selector */}
+        <div className="relative w-1/2">
+          <select
+            value={hours}
+            onChange={(e) =>
+              handleTimeChange("hours", parseInt(e.target.value))
+            }
+            disabled={disabled}
+            className={`
+              w-full bg-gray-800 text-white rounded-lg py-3 pl-4 pr-10 text-center
+              appearance-none focus:ring-2 focus:ring-teal-500 outline-none
+              transition-all duration-200 ease-in-out text-lg
+              ${
+                disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
+              }
+            `}
+          >
+            {hoursOptions.map((option) => (
+              <option key={`hour-${option.value}`} value={option.value}>
+                {option.display}
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <span className="text-sm text-gray-400">h</span>
+          </div>
+        </div>
+
+        {/* Minutes selector */}
+        <div className="relative w-1/2">
+          <select
+            value={minutes}
+            onChange={(e) =>
+              handleTimeChange("minutes", parseInt(e.target.value))
+            }
+            disabled={disabled}
+            className={`
+              w-full bg-gray-800 text-white rounded-lg py-3 pl-4 pr-10 text-center
+              appearance-none focus:ring-2 focus:ring-teal-500 outline-none
+              transition-all duration-200 ease-in-out text-lg
+              ${
+                disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
+              }
+            `}
+          >
+            {minutesOptions.map((option) => (
+              <option key={`min-${option.value}`} value={option.value}>
+                {option.display}
+              </option>
+            ))}
+          </select>
+          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+            <span className="text-sm text-gray-400">m</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Simple explanation for better UX */}
+      <p className="mt-1 text-xs text-center text-gray-500">
+        {label.includes("Start")
+          ? "When AC will turn on"
+          : "When AC will turn off"}
+      </p>
+    </div>
+  );
+};
+
 export default function Home() {
   const [temperature, setTemperature] = useState(17);
   const [mode, setMode] = useState("cool");
@@ -45,6 +144,14 @@ export default function Home() {
   // Supaya tidak terlalu sering update ke firebase
   const debouncedUpdate = debounce((newState) => {
     set(ref(db, "ac_control"), {
+      temperature,
+      mode,
+      fanSpeed,
+      swing: isSwingOn,
+      power: isPowerOn,
+      startTime,
+      endTime,
+      scheduleEnabled,
       ...newState,
       timestamp: Date.now(),
     }).catch((error) => {
@@ -103,7 +210,6 @@ export default function Home() {
   };
 
   const handleTemperature = (action) => {
-    if (!isPowerOn) return;
     if (action === "increase" && temperature < 30) {
       setTemperature((prev) => {
         const newTemp = prev + 1;
@@ -120,19 +226,16 @@ export default function Home() {
   };
 
   const handleModeChange = (newMode) => {
-    if (!isPowerOn) return;
     setMode(newMode);
     updateACState({ mode: newMode });
   };
 
   const handleFanSpeed = (speed) => {
-    if (!isPowerOn) return;
     setFanSpeed(speed);
     updateACState({ fanSpeed: speed });
   };
 
   const handleSwing = () => {
-    if (!isPowerOn) return;
     setIsSwingOn((prev) => {
       const newState = !prev;
       updateACState({ swing: newState });
@@ -190,17 +293,51 @@ export default function Home() {
   const handleScheduleChange = (type, value) => {
     if (type === "start") {
       setStartTime(value);
-      updateACState({ startTime: value });
+      updateACState({ startTime: value, scheduleEnabled });
     } else if (type === "end") {
+      // Allow any end time now, even if it's earlier than start time
       setEndTime(value);
-      updateACState({ endTime: value });
+      updateACState({ endTime: value, scheduleEnabled });
+    }
+  };
+
+  // Helper function to check if this is an overnight schedule
+  const isOvernightSchedule = (start, end) => {
+    // If end time is less than start time, it's an overnight schedule
+    return end < start;
+  };
+
+  // Helper function to create a user-friendly time range display
+  const formatScheduleTime = (start, end) => {
+    if (isOvernightSchedule(start, end)) {
+      return `${start} (today) to ${end} (tomorrow)`;
+    } else {
+      return `${start} to ${end} (same day)`;
     }
   };
 
   const handleScheduleToggle = () => {
     setScheduleEnabled((prev) => {
       const newState = !prev;
-      updateACState({ scheduleEnabled: newState });
+
+      // If enabling schedule, turn power off
+      if (newState) {
+        setIsPowerOn(false);
+        debouncedUpdate({
+          scheduleEnabled: newState,
+          startTime,
+          endTime,
+          power: false,
+          timestamp: Date.now(),
+        });
+      } else {
+        updateACState({
+          scheduleEnabled: newState,
+          startTime,
+          endTime,
+        });
+      }
+
       return newState;
     });
   };
@@ -361,7 +498,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.8 }}
                 className="text-red-500"
               >
-                Old Ass
+                Old
               </motion.span>{" "}
               AC
               <br className="hidden lg:block" />
@@ -463,11 +600,11 @@ export default function Home() {
               <button
                 onClick={() => handleTemperature("decrease")}
                 className={`temp-button ${
-                  !isPowerOn || temperature <= 16
+                  temperature <= 16
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-800"
                 }`}
-                disabled={!isPowerOn || temperature <= 16}
+                disabled={temperature <= 16}
               >
                 <FaChevronDown className="text-xl sm:text-2xl md:text-3xl" />
               </button>
@@ -510,11 +647,11 @@ export default function Home() {
               <button
                 onClick={() => handleTemperature("increase")}
                 className={`temp-button ${
-                  !isPowerOn || temperature >= 30
+                  temperature >= 30
                     ? "opacity-50 cursor-not-allowed"
                     : "hover:bg-gray-800"
                 }`}
-                disabled={!isPowerOn || temperature >= 30}
+                disabled={temperature >= 30}
               >
                 <FaChevronUp className="text-xl sm:text-2xl md:text-3xl" />
               </button>
@@ -534,9 +671,8 @@ export default function Home() {
                     key={m.name}
                     onClick={() => handleModeChange(m.name)}
                     className={`control-button ${
-                      mode === m.name && isPowerOn ? "active" : ""
-                    } ${!isPowerOn ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={!isPowerOn}
+                      mode === m.name ? "active" : ""
+                    }`}
                   >
                     {m.icon}
                   </button>
@@ -548,9 +684,8 @@ export default function Home() {
                     key={m.name}
                     onClick={() => handleModeChange(m.name)}
                     className={`control-button ${
-                      mode === m.name && isPowerOn ? "active" : ""
-                    } ${!isPowerOn ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={!isPowerOn}
+                      mode === m.name ? "active" : ""
+                    }`}
                   >
                     {m.icon}
                   </button>
@@ -575,17 +710,12 @@ export default function Home() {
                     key={speed}
                     onClick={() => handleFanSpeed(speed)}
                     className={`control-button ${
-                      fanSpeed === speed && isPowerOn ? "active" : ""
-                    } ${!isPowerOn ? "opacity-50 cursor-not-allowed" : ""}`}
-                    disabled={!isPowerOn}
+                      fanSpeed === speed ? "active" : ""
+                    }`}
                   >
                     <FaFan
                       className={`text-base sm:text-lg
-                        ${
-                          fanSpeed === speed && isPowerOn
-                            ? getFanSpinSpeed(speed)
-                            : ""
-                        }`}
+                        ${fanSpeed === speed ? getFanSpinSpeed(speed) : ""}`}
                     />
                   </button>
                 ))}
@@ -598,13 +728,8 @@ export default function Home() {
                 <button
                   onClick={handleSwing}
                   className={`swing-toggle ${
-                    !isPowerOn
-                      ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                      : isSwingOn
-                      ? "bg-teal-500"
-                      : "bg-gray-600"
+                    isSwingOn ? "bg-teal-500" : "bg-gray-600"
                   }`}
-                  disabled={!isPowerOn}
                 >
                   <div
                     className="swing-toggle-slider"
@@ -621,74 +746,61 @@ export default function Home() {
           </motion.div>
 
           {/* Schedule Control */}
-          <motion.div variants={childVariants} className="card">
+          <motion.div
+            variants={childVariants}
+            className="overflow-visible card"
+          >
             <div className="flex items-center justify-between mb-4">
               <span className="text-xs sm:text-sm">Schedule</span>
-              <button
+              <motion.button
                 onClick={handleScheduleToggle}
+                whileTap={{ scale: 0.95 }}
                 className={`swing-toggle ${
-                  !isPowerOn
-                    ? "bg-gray-600 opacity-50 cursor-not-allowed"
-                    : scheduleEnabled
-                    ? "bg-teal-500"
-                    : "bg-gray-600"
+                  scheduleEnabled ? "bg-teal-500" : "bg-gray-600"
                 }`}
-                disabled={!isPowerOn}
               >
-                <div
+                <motion.div
                   className="swing-toggle-slider"
-                  style={{
+                  animate={{
                     left: scheduleEnabled ? "calc(100% - 32px)" : "4px",
                   }}
+                  transition={{ type: "spring", stiffness: 500, damping: 30 }}
                 />
-              </button>
+              </motion.button>
             </div>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-2">
-                <label className="text-xs text-gray-500 sm:text-sm">
-                  Start Time (WIB)
-                </label>
-                <input
-                  type="time"
-                  value={startTime}
-                  onChange={(e) =>
-                    handleScheduleChange("start", e.target.value)
-                  }
-                  disabled={!isPowerOn || !scheduleEnabled}
-                  className={`
-                    bg-gray-800 text-white rounded-lg px-3 py-2 text-sm
-                    focus:ring-2 focus:ring-teal-500 outline-none
-                    ${
-                      !isPowerOn || !scheduleEnabled
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }
-                  `}
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label className="text-xs text-gray-500 sm:text-sm">
-                  End Time (WIB)
-                </label>
-                <input
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => handleScheduleChange("end", e.target.value)}
-                  disabled={!isPowerOn || !scheduleEnabled}
-                  className={`
-                    bg-gray-800 text-white rounded-lg px-3 py-2 text-sm
-                    focus:ring-2 focus:ring-teal-500 outline-none
-                    ${
-                      !isPowerOn || !scheduleEnabled
-                        ? "opacity-50 cursor-not-allowed"
-                        : ""
-                    }
-                  `}
-                />
-              </div>
+              <TimePickerInput
+                label="Start Time (WIB)"
+                value={startTime}
+                onChange={(value) => handleScheduleChange("start", value)}
+                disabled={!scheduleEnabled}
+              />
+              <TimePickerInput
+                label="End Time (WIB)"
+                value={endTime}
+                onChange={(value) => handleScheduleChange("end", value)}
+                disabled={!scheduleEnabled}
+              />
             </div>
+
+            {scheduleEnabled && (
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 text-center"
+              >
+                <p className="text-xs text-amber-400">Schedule is active</p>
+                <p className="mt-1 text-xs text-white">
+                  {formatScheduleTime(startTime, endTime)}
+                </p>
+                {isOvernightSchedule(startTime, endTime) && (
+                  <p className="mt-1 text-xs text-gray-400">
+                    (Overnight mode: AC will remain on past midnight)
+                  </p>
+                )}
+              </motion.div>
+            )}
           </motion.div>
         </motion.div>
       </div>
