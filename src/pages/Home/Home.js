@@ -19,102 +19,132 @@ import { useInView } from "react-intersection-observer";
 import { FaWhatsapp, FaGithub, FaTiktok } from "react-icons/fa";
 import LoginButton from "../../components/LoginButton";
 import { auth } from "../../firebase/config";
+import SensorDataDisplay from "../../components/SensorDataDisplay";
 
 const TimePickerInput = ({ value, onChange, label, disabled }) => {
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [tempTime, setTempTime] = useState(value);
   const [hours, minutes] = value.split(":").map(Number);
 
-  const hoursOptions = Array.from({ length: 24 }, (_, i) => ({
-    value: i,
-    display: String(i).padStart(2, "0"),
-  }));
+  const openModal = () => {
+    if (!disabled) {
+      setTempTime(value);
+      setIsModalOpen(true);
+    }
+  };
 
-  const minutesOptions = Array.from({ length: 60 }, (_, i) => {
-    const mins = i * 1;
-    return {
-      value: mins,
-      display: String(mins).padStart(2, "0"),
-    };
-  });
+  const closeModal = () => {
+    setIsModalOpen(false);
+  };
 
-  const handleTimeChange = (type, newValue) => {
-    const newHours = type === "hours" ? newValue : hours;
-    const newMinutes = type === "minutes" ? newValue : minutes;
-    const formattedTime = `${String(newHours).padStart(2, "0")}:${String(
-      newMinutes
-    ).padStart(2, "0")}`;
-    onChange(formattedTime);
+  const saveTime = () => {
+    onChange(tempTime);
+    closeModal();
+  };
+
+  const updateTempTime = (type, newValue) => {
+    const [h, m] = tempTime.split(":").map(Number);
+    const newHours = type === "hours" ? newValue : h;
+    const newMinutes = type === "minutes" ? newValue : m;
+    setTempTime(`${String(newHours).padStart(2, "0")}:${String(newMinutes).padStart(2, "0")}`);
   };
 
   return (
     <div className="flex flex-col gap-2">
-      <label className="text-xs text-center text-gray-500 sm:text-sm">
+      <label className="text-xs text-center text-sky-500 sm:text-sm">
         {label}
       </label>
 
-      <div className="flex items-center justify-center gap-2">
-        {/* Hours selector */}
-        <div className="relative w-1/2">
-          <select
-            value={hours}
-            onChange={(e) =>
-              handleTimeChange("hours", parseInt(e.target.value))
-            }
-            disabled={disabled}
-            className={`
-              w-full bg-gray-800 text-white rounded-lg py-3 pl-4 pr-10 text-center
-              appearance-none focus:ring-2 focus:ring-teal-500 outline-none
-              transition-all duration-200 ease-in-out text-lg
-              ${
-                disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
-              }
-            `}
-          >
-            {hoursOptions.map((option) => (
-              <option key={`hour-${option.value}`} value={option.value}>
-                {option.display}
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <span className="text-sm text-gray-400">h</span>
+      {/* Tampilan waktu yang bisa diklik */}
+      <button
+        onClick={openModal}
+        className={`
+          w-full bg-white text-sky-600 rounded-lg py-3 px-4 text-center
+          border border-sky-200 transition-all duration-200 ease-in-out text-lg
+          shadow-sm
+          ${disabled ? "opacity-50 cursor-not-allowed" : "hover:border-sky-400 hover:bg-sky-50"}
+        `}
+        disabled={disabled}
+      >
+        <span className="text-2xl font-semibold">{value}</span>
+        <div className="mt-1 text-xs text-sky-400">
+          {label.includes("Start") ? "Waktu AC menyala" : "Waktu AC mati"}
+        </div>
+      </button>
+
+      {/* Modal untuk memilih waktu */}
+      {isModalOpen && (
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-2xl p-6 w-[90%] max-w-sm shadow-xl border border-sky-100 animate-fade-in">
+            <h3 className="text-lg font-semibold text-sky-600 text-center mb-4">{label}</h3>
+            
+            <div className="grid grid-cols-2 gap-6 mb-6">
+              {/* Jam selector */}
+              <div className="flex flex-col items-center">
+                <span className="text-sm text-sky-400 mb-2">Jam</span>
+                <div className="relative flex flex-col items-center">
+                  <button 
+                    onClick={() => updateTempTime("hours", (tempTime.split(":")[0] * 1 + 1) % 24)}
+                    className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 mb-2"
+                  >
+                    <FaChevronUp />
+                  </button>
+                  
+                  <div className="text-3xl font-bold text-sky-600 min-w-[60px] text-center">
+                    {tempTime.split(":")[0]}
+                  </div>
+                  
+                  <button 
+                    onClick={() => updateTempTime("hours", (tempTime.split(":")[0] * 1 + 23) % 24)}
+                    className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 mt-2"
+                  >
+                    <FaChevronDown />
+                  </button>
+                </div>
+              </div>
+              
+              {/* Menit selector */}
+              <div className="flex flex-col items-center">
+                <span className="text-sm text-sky-400 mb-2">Menit</span>
+                <div className="relative flex flex-col items-center">
+                  <button 
+                    onClick={() => updateTempTime("minutes", (tempTime.split(":")[1] * 1 + 5) % 60)}
+                    className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 mb-2"
+                  >
+                    <FaChevronUp />
+                  </button>
+                  
+                  <div className="text-3xl font-bold text-sky-600 min-w-[60px] text-center">
+                    {tempTime.split(":")[1]}
+                  </div>
+                  
+                  <button 
+                    onClick={() => updateTempTime("minutes", (tempTime.split(":")[1] * 1 + 55) % 60)}
+                    className="p-2 rounded-full bg-sky-50 text-sky-500 hover:bg-sky-100 mt-2"
+                  >
+                    <FaChevronDown />
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex justify-between gap-4 mt-4">
+              <button 
+                onClick={closeModal}
+                className="flex-1 py-2.5 px-4 bg-gray-100 hover:bg-gray-200 rounded-lg text-gray-600"
+              >
+                Batal
+              </button>
+              <button 
+                onClick={saveTime}
+                className="flex-1 py-2.5 px-4 bg-sky-500 hover:bg-sky-600 rounded-lg text-white"
+              >
+                Simpan
+              </button>
+            </div>
           </div>
         </div>
-
-        {/* Minutes selector */}
-        <div className="relative w-1/2">
-          <select
-            value={minutes}
-            onChange={(e) =>
-              handleTimeChange("minutes", parseInt(e.target.value))
-            }
-            disabled={disabled}
-            className={`
-              w-full bg-gray-800 text-white rounded-lg py-3 pl-4 pr-10 text-center
-              appearance-none focus:ring-2 focus:ring-teal-500 outline-none
-              transition-all duration-200 ease-in-out text-lg
-              ${
-                disabled ? "opacity-50 cursor-not-allowed" : "hover:bg-gray-700"
-              }
-            `}
-          >
-            {minutesOptions.map((option) => (
-              <option key={`min-${option.value}`} value={option.value}>
-                {option.display}
-              </option>
-            ))}
-          </select>
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-            <span className="text-sm text-gray-400">m</span>
-          </div>
-        </div>
-      </div>
-
-      {/* Simple explanation for better UX */}
-      <p className="mt-1 text-xs text-center text-gray-500">
-        {label.includes("Start")
-          ? "When AC will turn on"
-          : "When AC will turn off"}
-      </p>
+      )}
     </div>
   );
 };
@@ -134,6 +164,11 @@ export default function Home() {
   const [startTime, setStartTime] = useState("00:00");
   const [endTime, setEndTime] = useState("00:00");
   const [scheduleEnabled, setScheduleEnabled] = useState(false);
+  const [sensorData, setSensorData] = useState({
+    temperature: null,
+    humidity: null,
+    timestamp: null,
+  });
 
   useEffect(() => {
     const unsubscribe = auth.onAuthStateChanged((user) => {
@@ -262,6 +297,22 @@ export default function Home() {
     return () => unsubscribe();
   }, []);
 
+  useEffect(() => {
+    const sensorRef = ref(db, "sensor_data");
+    const unsubscribe = onValue(sensorRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        setSensorData({
+          temperature: data.temperature,
+          humidity: data.humidity,
+          timestamp: data.timestamp,
+        });
+      }
+    });
+
+    return () => unsubscribe();
+  }, []);
+
   const getFanSpinSpeed = (speed) => {
     switch (speed) {
       case 1:
@@ -320,7 +371,7 @@ export default function Home() {
     setScheduleEnabled((prev) => {
       const newState = !prev;
 
-      // If enabling schedule, turn power off
+      // Jika mengaktifkan jadwal, matikan daya
       if (newState) {
         setIsPowerOn(false);
         debouncedUpdate({
@@ -331,10 +382,13 @@ export default function Home() {
           timestamp: Date.now(),
         });
       } else {
+        // Reset waktu ke "00:00" ketika jadwal dimatikan
+        setStartTime("00:00");
+        setEndTime("00:00");
         updateACState({
           scheduleEnabled: newState,
-          startTime,
-          endTime,
+          startTime: "00:00",
+          endTime: "00:00",
         });
       }
 
@@ -457,7 +511,7 @@ export default function Home() {
   };
 
   return (
-    <div className="relative min-h-screen bg-gradient-to-b from-cyan-50 to-white font-montserrat">
+    <div className="relative min-h-screen bg-white font-montserrat">
       {/* Add Error Notification */}
       <ErrorNotification />
 
@@ -466,15 +520,15 @@ export default function Home() {
         initial={{ opacity: 0, y: -20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="shadow-lg py-4 px-4 md:px-12 lg:px-24 xl:px-32 2xl:px-[100px] flex justify-between items-center"
+        className="py-4 px-4 md:px-12 lg:px-24 xl:px-32 2xl:px-[100px] flex justify-between items-center bg-white shadow-sm"
       >
-        <h1 className="font-semibold text-gray-800 sm:text-1xl md:text-3xl lg:text-4xl">
+        <h1 className="font-semibold text-sky-600 sm:text-1xl md:text-3xl lg:text-4xl">
           My Wireless Remote
         </h1>
         <LoginButton user={user} setUser={setUser} />
       </motion.div>
 
-      {/* Hero Section */}
+      {/* Replace Hero Section with SensorDataDisplay */}
       <motion.div
         ref={heroRef}
         initial="hidden"
@@ -482,71 +536,11 @@ export default function Home() {
         variants={containerVariants}
         className="px-4 md:px-12 lg:px-24 xl:px-32 2xl:px-[200px] py-4 md:py-8"
       >
-        <div className="flex flex-col items-center justify-between gap-4 lg:flex-row lg:gap-1">
-          {/* Left Content */}
-          <motion.div
-            variants={heroVariants}
-            initial="hidden"
-            animate="visible"
-            className="text-center lg:w-1/2 lg:text-left"
-          >
-            <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-[50px] font-bold mb-4 leading-[30px] sm:leading-[35px] md:leading-[40px] lg:leading-[70px]">
-              Turn Your{" "}
-              <motion.span
-                initial={{ color: "#000" }}
-                animate={{ color: "#EF4444" }}
-                transition={{ duration: 0.5, delay: 0.8 }}
-                className="text-red-500"
-              >
-                Old
-              </motion.span>{" "}
-              AC
-              <br className="hidden lg:block" />
-              <span className="lg:hidden"> </span>
-              Into a Smart AC - Control Anytime, Anywhere with
-              <motion.span
-                initial={{ color: "#000" }}
-                animate={{ color: "#14B8A6" }}
-                transition={{ duration: 0.5, delay: 1.2 }}
-                className="text-teal-500"
-              >
-                {" "}
-                ESP8266!
-              </motion.span>
-            </h1>
-          </motion.div>
-
-          {/* Right Content */}
-          <motion.div
-            variants={imageVariants}
-            initial="hidden"
-            animate="visible"
-            className="lg:w-1/2 flex justify-center lg:mt-20 px-4 sm:px-8 md:px-0 relative h-[300px] sm:h-[350px] lg:h-[400px]"
-          >
-            {/* Gambar AC */}
-            <motion.div className="relative z-10">
-              <img
-                src={acImage}
-                alt="Smart AC"
-                className="rounded-2xl shadow-lg w-[250px] sm:w-[300px] lg:w-[380px]"
-              />
-            </motion.div>
-
-            {/* Gambar ESP - posisi overlap dengan AC */}
-            <motion.div
-              initial={{ opacity: 0, y: 50 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.8 }}
-              className="absolute top-[35%] -right-4 sm:-right-8 lg:-right-0 z-20"
-            >
-              <img
-                src={espImage}
-                alt="ESP8266 Module"
-                className="rounded-xl shadow-lg w-[250px] sm:w-[300px] lg:w-[380px]"
-              />
-            </motion.div>
-          </motion.div>
-        </div>
+        <SensorDataDisplay
+          temperature={sensorData.temperature}
+          humidity={sensorData.humidity}
+          timestamp={sensorData.timestamp}
+        />
       </motion.div>
 
       {/* Control Section - Update layout */}
@@ -563,11 +557,11 @@ export default function Home() {
           className="max-w-2xl mx-auto space-y-6"
         >
           {/* Power Control */}
-          <motion.div variants={childVariants} className="card">
+          <motion.div variants={childVariants} className="card bg-white border border-sky-100 shadow-sm">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs sm:text-sm">Power</p>
-                <h3 className="text-base font-bold sm:text-lg lg:text-xl">
+                <p className="text-xs sm:text-sm text-sky-400">Power</p>
+                <h3 className="text-base font-bold sm:text-lg lg:text-xl text-sky-600">
                   AC Control
                 </h3>
               </div>
@@ -595,14 +589,14 @@ export default function Home() {
           </motion.div>
 
           {/* Temperature Control */}
-          <motion.div variants={childVariants} className="card">
+          <motion.div variants={childVariants} className="card bg-white border border-sky-100 shadow-sm">
             <div className="flex items-center justify-between">
               <button
                 onClick={() => handleTemperature("decrease")}
-                className={`temp-button ${
+                className={`temp-button bg-sky-50 text-sky-600 ${
                   temperature <= 16
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-800"
+                    : "hover:bg-sky-100"
                 }`}
                 disabled={temperature <= 16}
               >
@@ -615,27 +609,23 @@ export default function Home() {
                   style={{
                     backgroundImage: `linear-gradient(
                       to top,
-                      rgb(59, 130, 246) ${Math.max(
-                        0,
-                        100 - (temperature - 16) * 7.14
-                      )}%, 
-                      rgb(139, 92, 246) ${Math.max(
-                        0,
-                        150 - (temperature - 16) * 7.14
-                      )}%,
-                      rgb(239, 68, 68) 100%
+                      rgb(56, 189, 248) 0%,  // Biru untuk dingin
+                      rgb(125, 211, 252) 50%, // Gradasi biru muda
+                      rgb(239, 68, 68) 100%   // Merah untuk panas
                     )`,
+                    backgroundSize: "100% 200%",
+                    backgroundPosition: `0% ${Math.min(100, (temperature - 16) * 7.14)}%`, // Posisi gradien berdasarkan temperatur
                     "--temp-glow-color":
                       temperature <= 20
-                        ? "rgb(59, 130, 246)"
+                        ? "rgb(56, 189, 248)" // Biru untuk dingin
                         : temperature >= 26
-                        ? "rgb(239, 68, 68)"
-                        : "rgb(139, 92, 246)",
+                        ? "rgb(239, 68, 68)" // Merah untuk panas
+                        : "rgb(125, 211, 252)", // Biru muda untuk suhu sedang
                   }}
                 >
                   {temperature}°C
                 </span>
-                <div className="mt-2 text-xs text-gray-400 sm:text-sm">
+                <div className="mt-2 text-xs text-sky-400 sm:text-sm">
                   {temperature <= 20
                     ? "Cool"
                     : temperature >= 26
@@ -646,10 +636,10 @@ export default function Home() {
 
               <button
                 onClick={() => handleTemperature("increase")}
-                className={`temp-button ${
+                className={`temp-button bg-sky-50 text-sky-600 ${
                   temperature >= 30
                     ? "opacity-50 cursor-not-allowed"
-                    : "hover:bg-gray-800"
+                    : "hover:bg-sky-100"
                 }`}
                 disabled={temperature >= 30}
               >
@@ -659,10 +649,10 @@ export default function Home() {
           </motion.div>
 
           {/* Mode Control */}
-          <motion.div variants={childVariants} className="card">
+          <motion.div variants={childVariants} className="card bg-white border border-sky-100 shadow-sm">
             <div className="flex items-center justify-between mb-2 sm:mb-3">
-              <span className="text-xs sm:text-sm">Mode</span>
-              <span className="text-xs capitalize sm:text-sm">{mode}</span>
+              <span className="text-xs sm:text-sm text-sky-400">Mode</span>
+              <span className="text-xs capitalize sm:text-sm text-sky-600">{mode}</span>
             </div>
             <div className="flex flex-col items-center gap-3 md:gap-4">
               <div className="flex justify-center gap-3 md:gap-6 lg:gap-20">
@@ -671,7 +661,7 @@ export default function Home() {
                     key={m.name}
                     onClick={() => handleModeChange(m.name)}
                     className={`control-button ${
-                      mode === m.name ? "active" : ""
+                      mode === m.name ? "bg-sky-100 text-sky-600 border-sky-300" : "bg-white text-gray-500 border-gray-200 hover:bg-sky-50"
                     }`}
                   >
                     {m.icon}
@@ -684,7 +674,7 @@ export default function Home() {
                     key={m.name}
                     onClick={() => handleModeChange(m.name)}
                     className={`control-button ${
-                      mode === m.name ? "active" : ""
+                      mode === m.name ? "bg-sky-100 text-sky-600 border-sky-300" : "bg-white text-gray-500 border-gray-200 hover:bg-sky-50"
                     }`}
                   >
                     {m.icon}
@@ -699,10 +689,10 @@ export default function Home() {
             variants={childVariants}
             className="grid grid-cols-1 gap-4 sm:grid-cols-2"
           >
-            <motion.div variants={childVariants} className="card">
+            <motion.div variants={childVariants} className="card bg-white border border-sky-100 shadow-sm">
               <div className="flex items-center justify-between mb-2 sm:mb-3">
-                <span className="text-xs sm:text-sm">Fan Speed</span>
-                <span className="text-xs sm:text-sm">Level {fanSpeed}</span>
+                <span className="text-xs sm:text-sm text-sky-400">Fan Speed</span>
+                <span className="text-xs sm:text-sm text-sky-600">Level {fanSpeed}</span>
               </div>
               <div className="flex justify-center gap-4 fan-buttons-container sm:gap-6">
                 {[1, 2, 3].map((speed) => (
@@ -710,7 +700,7 @@ export default function Home() {
                     key={speed}
                     onClick={() => handleFanSpeed(speed)}
                     className={`control-button ${
-                      fanSpeed === speed ? "active" : ""
+                      fanSpeed === speed ? "bg-sky-100 text-sky-600 border-sky-300" : "bg-white text-gray-500 border-gray-200 hover:bg-sky-50"
                     }`}
                   >
                     <FaFan
@@ -722,23 +712,23 @@ export default function Home() {
               </div>
             </motion.div>
 
-            <motion.div variants={childVariants} className="swing-card">
+            <motion.div variants={childVariants} className="swing-card bg-white border border-sky-100 shadow-sm">
               <div className="swing-toggle-container">
-                <span className="text-xs sm:text-sm">Swing Mode</span>
+                <span className="text-xs sm:text-sm text-sky-400">Swing Mode</span>
                 <button
                   onClick={handleSwing}
                   className={`swing-toggle ${
-                    isSwingOn ? "bg-teal-500" : "bg-gray-600"
+                    isSwingOn ? "bg-sky-500" : "bg-gray-300"
                   }`}
                 >
                   <div
-                    className="swing-toggle-slider"
+                    className="swing-toggle-slider bg-white"
                     style={{
                       left: isSwingOn ? "calc(100% - 32px)" : "4px",
                     }}
                   />
                 </button>
-                <span className="mt-1 text-xs sm:text-sm">
+                <span className="mt-1 text-xs sm:text-sm text-sky-600">
                   {isSwingOn ? "ON" : "OFF"}
                 </span>
               </div>
@@ -748,19 +738,19 @@ export default function Home() {
           {/* Schedule Control */}
           <motion.div
             variants={childVariants}
-            className="overflow-visible card"
+            className="overflow-visible card bg-white border border-sky-100 shadow-sm"
           >
             <div className="flex items-center justify-between mb-4">
-              <span className="text-xs sm:text-sm">Schedule</span>
+              <span className="text-xs sm:text-sm text-sky-400">Schedule</span>
               <motion.button
                 onClick={handleScheduleToggle}
                 whileTap={{ scale: 0.95 }}
                 className={`swing-toggle ${
-                  scheduleEnabled ? "bg-teal-500" : "bg-gray-600"
+                  scheduleEnabled ? "bg-sky-500" : "bg-gray-300"
                 }`}
               >
                 <motion.div
-                  className="swing-toggle-slider"
+                  className="swing-toggle-slider bg-white"
                   animate={{
                     left: scheduleEnabled ? "calc(100% - 32px)" : "4px",
                   }}
@@ -790,8 +780,8 @@ export default function Home() {
                 animate={{ opacity: 1 }}
                 className="mt-4 text-center"
               >
-                <p className="text-xs text-amber-400">Schedule is active</p>
-                <p className="mt-1 text-xs text-white">
+                <p className="text-xs text-sky-400">Schedule is active</p>
+                <p className="mt-1 text-xs text-sky-600">
                   {formatScheduleTime(startTime, endTime)}
                 </p>
                 {isOvernightSchedule(startTime, endTime) && (
@@ -811,12 +801,12 @@ export default function Home() {
         whileInView="visible"
         viewport={{ once: false }}
         variants={containerVariants}
-        className="footer-fixed"
+        className="bg-white shadow-sm border-t border-sky-100 py-4"
       >
         {/* Social Links */}
         <div className="container px-4 py-3 mx-auto">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row sm:gap-0">
-            <div className="text-sm sm:text-base">
+            <div className="text-sm sm:text-base text-sky-600">
               <span>© 2024 MyRemoteAC Project</span>
             </div>
 
@@ -825,7 +815,7 @@ export default function Home() {
                 href="https://wa.me/6281382885716"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-link"
+                className="social-link text-sky-500 hover:text-sky-700"
               >
                 <FaWhatsapp className="text-xl" />
               </a>
@@ -834,7 +824,7 @@ export default function Home() {
                 href="https://tiktok.com/@mutaks"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-link"
+                className="social-link text-sky-500 hover:text-sky-700"
               >
                 <FaTiktok className="text-xl" />
               </a>
@@ -843,7 +833,7 @@ export default function Home() {
                 href="https://github.com/Rzki-Lil"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="social-link"
+                className="social-link text-sky-500 hover:text-sky-700"
               >
                 <FaGithub className="text-xl" />
                 <span className="text-sm sm:text-base">Rzki-Lil</span>
