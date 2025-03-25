@@ -1,22 +1,28 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { WiTime8 } from "react-icons/wi";
-// Use individual imports to avoid conflicts
 import format from "date-fns/format";
 import fromUnixTime from "date-fns/fromUnixTime";
 import isValid from "date-fns/isValid";
 
 const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
-  // Format the timestamp properly
   const getFormattedTime = () => {
     if (!timestamp) return "No data available";
 
-    // Convert seconds to milliseconds if needed
-    const timestampInMs =
-      timestamp.toString().length === 10 ? timestamp * 1000 : timestamp;
+    let normalizedTimestamp = timestamp;
+
+
+    const currentTime = Math.floor(Date.now() / 1000);
+    const timeDiff = Math.abs(currentTime - timestamp);
+
+    if (timeDiff > 25000) {
+      normalizedTimestamp = timestamp + 7 * 3600;
+    }
 
     const date = fromUnixTime(
-      timestamp.toString().length === 10 ? timestamp : timestamp / 1000
+      normalizedTimestamp.toString().length === 10
+        ? normalizedTimestamp
+        : normalizedTimestamp / 1000
     );
 
     if (!isValid(date)) return "Invalid timestamp";
@@ -24,7 +30,7 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
     return format(date, "MMM d, yyyy HH:mm:ss 'WIB'");
   };
 
-  // Calculate temperature gradient color with more white
+
   const getTempGradient = () => {
     if (!temperature || isNaN(temperature))
       return "from-gray-400 via-white to-white";
@@ -35,7 +41,7 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
     return "from-red-500 via-red-200 to-white";
   };
 
-  // Calculate humidity gradient color with more white
+
   const getHumidityGradient = () => {
     if (!humidity || isNaN(humidity)) return "from-gray-400 via-white to-white";
 
@@ -49,7 +55,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
 
   return (
     <div className="w-full py-3 sm:py-5 md:py-6">
-      {/* Timestamp display - smaller and more subtle */}
       <div className="flex justify-center mb-2 sm:mb-3 md:mb-4">
         <motion.div
           initial={{ opacity: 0 }}
@@ -62,7 +67,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
       </div>
 
       <div className="grid grid-cols-2 gap-3 sm:gap-8 md:gap-16">
-        {/* Temperature Display - without icon, with label at bottom */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -86,7 +90,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
               °C
             </span>
 
-            {/* Aesthetic text label at bottom - removed underline */}
             <div className="mt-1 sm:mt-2 md:mt-3">
               <span className="text-[9px] sm:text-xs md:text-sm font-light tracking-widest text-gray-400 uppercase">
                 temperature
@@ -95,7 +98,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
           </motion.div>
         </motion.div>
 
-        {/* Humidity Display - without icon, with label at bottom */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -119,7 +121,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
               %
             </span>
 
-            {/* Aesthetic text label at bottom - removed underline */}
             <div className="mt-1 sm:mt-2 md:mt-3">
               <span className="text-[9px] sm:text-xs md:text-sm font-light tracking-widest text-gray-400 uppercase">
                 humidity
