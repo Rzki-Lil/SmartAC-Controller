@@ -1,5 +1,4 @@
-<<<<<<< HEAD
-# Getting Started with Create React App
+# MyRemoteAC
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
@@ -69,6 +68,69 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-=======
-# MyRemoteAC
->>>>>>> f39efcadd8ddd5e8c00cf38336547949fe44c6fe
+
+# Smart AC Controller
+
+Web application to control your air conditioning units remotely.
+
+## Docker Setup
+
+### Build and run with Docker Compose
+```bash
+# Build and start in one command
+docker-compose up -d --build
+
+# View logs
+docker-compose logs -f
+
+# Stop the container
+docker-compose down
+```
+
+### Manual Docker commands
+```bash
+# Build the Docker image
+docker build -t ac-web .
+
+# Run the container
+docker run -d -p 8080:80 --name ac-web ac-web
+
+# Stop the container
+docker stop ac-web
+
+# Remove the container
+docker rm ac-web
+```
+
+The application will be available at http://localhost:8080
+
+## Development without Docker
+
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
+```
+
+## Environment Variables
+
+Create a `.env` file in the root directory with the following variables:
+
+```
+REACT_APP_FIREBASE_API_KEY=your_api_key
+REACT_APP_FIREBASE_AUTH_DOMAIN=your_auth_domain
+REACT_APP_FIREBASE_DATABASE_URL=your_database_url
+REACT_APP_FIREBASE_PROJECT_ID=your_project_id
+REACT_APP_FIREBASE_STORAGE_BUCKET=your_storage_bucket
+REACT_APP_FIREBASE_MESSAGING_SENDER_ID=your_messaging_sender_id
+REACT_APP_FIREBASE_APP_ID=your_app_id
+```
+
+## License
+
+MIT

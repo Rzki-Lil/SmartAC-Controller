@@ -1,14 +1,14 @@
 import { BrowserRouter as Router } from 'react-router-dom';
-import Routes from './routes/routes';
+import AppRoutes from './routes/routes';
 
 function App() {
   return (
     <Router basename="/SmartAC-Controller">
       <div className="min-h-screen bg-gray-50">
-        <Routes />
+        <AppRoutes />
       </div>
     </Router>
   );
 }
 
-export default App; 
+export default App;

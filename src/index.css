@@ -1,7 +1,4 @@
-/* Hapus seluruh styling mist */
-/* .mist-container, .mist, .mist-1, .mist-2, .mist-3 dan keyframes animasi mereka */
 
-/* Update style untuk card dan tombol */
 .card {
   @apply rounded-2xl p-4 sm:p-6 bg-white border border-sky-100 shadow-sm transition-all duration-300 ease-in-out;
 }
@@ -27,7 +24,6 @@
          bg-sky-50 text-sky-600 border border-sky-200 shadow-sm;
 }
 
-/* Tombol power yang lebih estetik */
 .btn-power {
   @apply rounded-full w-12 h-12 sm:w-14 sm:h-14
          flex items-center justify-center transition-all duration-300
@@ -80,12 +76,10 @@
   @apply flex items-center gap-2 transition-colors duration-200 text-sky-500 hover:text-sky-700;
 }
 
-/* Ubah juga warna untuk komponen TimePickerInput */
 select {
   @apply bg-white text-sky-600 border border-sky-200 focus:ring-sky-500;
 }
 
-/* Tambahkan animasi untuk modal */
 @keyframes fade-in {
   from { opacity: 0; transform: scale(0.95); }
   to { opacity: 1; transform: scale(1); }

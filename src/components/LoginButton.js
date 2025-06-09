@@ -45,7 +45,7 @@ export default function LoginButton({ user, setUser }) {
               }}
             />
           ) : (
-            <div className="w-5 h-5 rounded-full bg-gray-300 flex items-center justify-center">
+            <div className="flex items-center justify-center w-5 h-5 bg-gray-300 rounded-full">
               <span className="text-xs text-gray-600">
                 {user.displayName?.charAt(0).toUpperCase()}
               </span>

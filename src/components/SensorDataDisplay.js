@@ -11,7 +11,6 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
 
     let normalizedTimestamp = timestamp;
 
-
     const currentTime = Math.floor(Date.now() / 1000);
     const timeDiff = Math.abs(currentTime - timestamp);
 
@@ -30,24 +29,27 @@ const SensorDataDisplay = ({ temperature, humidity, timestamp }) => {
     return format(date, "MMM d, yyyy HH:mm:ss 'WIB'");
   };
 
-
   const getTempGradient = () => {
     if (!temperature || isNaN(temperature))
-      return "from-gray-400 via-white to-white";
+      return "from-gray-400/80 via-gray-400/40 to-gray-400/5";
 
-    if (temperature < 18) return "from-blue-500 via-blue-200 to-white";
-    if (temperature < 25) return "from-green-500 via-green-200 to-white";
-    if (temperature < 28) return "from-yellow-500 via-yellow-200 to-white";
-    return "from-red-500 via-red-200 to-white";
+    if (temperature < 18)
+      return "from-blue-500/80 via-blue-500/40 to-blue-500/5";
+    if (temperature < 25)
+      return "from-green-500/80 via-green-500/40 to-green-500/5";
+    if (temperature < 28)
+      return "from-yellow-500/80 via-yellow-500/40 to-yellow-500/5";
+    return "from-red-500/80 via-red-500/40 to-red-500/5";
   };
 
-
   const getHumidityGradient = () => {
-    if (!humidity || isNaN(humidity)) return "from-gray-400 via-white to-white";
+    if (!humidity || isNaN(humidity))
+      return "from-gray-400/80 via-gray-400/40 to-gray-400/5";
 
-    if (humidity < 30) return "from-yellow-500 via-yellow-200 to-white";
-    if (humidity < 60) return "from-teal-500 via-teal-200 to-white";
-    return "from-blue-500 via-blue-200 to-white";
+    if (humidity < 30)
+      return "from-yellow-500/80 via-yellow-500/40 to-yellow-500/5";
+    if (humidity < 60) return "from-teal-500/80 via-teal-500/40 to-teal-500/5";
+    return "from-blue-500/80 via-blue-500/40 to-blue-500/5";
   };
 
   const tempGradient = getTempGradient();

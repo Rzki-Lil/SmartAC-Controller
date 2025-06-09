@@ -5,7 +5,6 @@ export default function AppRoutes() {
   return (
     <Routes>
       <Route path="/" element={<Home />} />
-      {/* Tambahkan route lainnya disini */}
     </Routes>
   );
-} 
+}
