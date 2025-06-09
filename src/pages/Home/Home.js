@@ -323,7 +323,7 @@ export default function Home() {
         resetAllStates();
       }
     }
-  }, [user, userDevices.length, selectedDevice, resetAllStates]); // Use userDevices.length instead of userDevices
+  }, [user, userDevices, selectedDevice, resetAllStates]); // Add userDevices to dependencies
 
   useEffect(() => {
     if (!selectedDevice) return;
@@ -399,7 +399,7 @@ export default function Home() {
 
       updateState();
     }, 300),
-    [selectedDevice, user] // Keep these dependencies
+    [selectedDevice, user, setError] // Add setError to dependencies
   );
 
   // Handle cleanup of debounced function
@@ -437,6 +437,19 @@ export default function Home() {
       icon: <WiNightAltCloudy className="text-4xl md:text-5xl lg:text-6xl" />,
     },
   ];
+
+  const getFanSpinSpeed = (speed) => {
+    switch (speed) {
+      case 1:
+        return "animate-spin-slow";
+      case 2:
+        return "animate-spin-medium";
+      case 3:
+        return "animate-spin-fast";
+      default:
+        return "";
+    }
+  };
 
   const handleTemperature = (action) => {
     if (!selectedDevice) {
@@ -490,59 +503,6 @@ export default function Home() {
       updateACState({ swing: newState });
       return newState;
     });
-  };
-
-  useEffect(() => {
-    if (!selectedDevice) return;
-
-    const acRef = ref(db, `devices/${selectedDevice}/ac_control`);
-    const unsubscribe = onValue(acRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setTemperature(data.temperature);
-        setMode(data.mode);
-        setFanSpeed(data.fanSpeed);
-        setIsSwingOn(data.swing);
-        setIsPowerOn(data.power);
-        setStartTime(data.startTime || "00:00");
-        setEndTime(data.endTime || "00:00");
-        setScheduleEnabled(data.scheduleEnabled || false);
-        setSelectedBrand(data.selectedBrand || "gree");
-      }
-    });
-
-    return () => unsubscribe();
-  }, [selectedDevice]);
-
-  useEffect(() => {
-    if (!selectedDevice) return;
-
-    const sensorRef = ref(db, `devices/${selectedDevice}/sensor_data`);
-    const unsubscribe = onValue(sensorRef, (snapshot) => {
-      const data = snapshot.val();
-      if (data) {
-        setSensorData({
-          temperature: data.temperature,
-          humidity: data.humidity,
-          timestamp: data.timestamp,
-        });
-      }
-    });
-
-    return () => unsubscribe();
-  }, [selectedDevice]);
-
-  const getFanSpinSpeed = (speed) => {
-    switch (speed) {
-      case 1:
-        return "animate-spin-slow";
-      case 2:
-        return "animate-spin-medium";
-      case 3:
-        return "animate-spin-fast";
-      default:
-        return "";
-    }
   };
 
   const handlePower = () => {
@@ -704,7 +664,7 @@ export default function Home() {
           console.error("Error fetching sensor data:", error);
         });
     },
-    [selectedDevice, resetAllStates] 
+    [selectedDevice, resetAllStates] // Remove setError from dependencies as it's stable
   );
 
   const containerVariants = {
