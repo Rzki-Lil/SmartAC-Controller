@@ -1,17 +1,23 @@
 {
   "files": {
-    "main.css": "/SmartAC-Controller/static/css/main.0b1e04ab.css",
-    "main.js": "/SmartAC-Controller/static/js/main.1ef0f488.js",
+    "main.css": "/SmartAC-Controller/static/css/main.fcd56271.css",
+    "main.js": "/SmartAC-Controller/static/js/main.55aabdeb.js",
     "static/media/Montserrat-ExtraBold.ttf": "/SmartAC-Controller/static/media/Montserrat-ExtraBold.6c8b198832c88c649faa.ttf",
     "static/media/Montserrat-Bold.ttf": "/SmartAC-Controller/static/media/Montserrat-Bold.50f0257aa1e905f4bfaf.ttf",
     "static/media/Montserrat-Medium.ttf": "/SmartAC-Controller/static/media/Montserrat-Medium.b8c6753baa964ccac1ba.ttf",
     "static/media/Montserrat-Regular.ttf": "/SmartAC-Controller/static/media/Montserrat-Regular.24785cc015b27a3e964b.ttf",
+    "static/media/daikin.png": "/SmartAC-Controller/static/media/daikin.3e2abb21595d416693b9.png",
+    "static/media/fujitsu.png": "/SmartAC-Controller/static/media/fujitsu.64e07cad9384530897b9.png",
+    "static/media/gree.png": "/SmartAC-Controller/static/media/gree.40c25a01adf16d206654.png",
+    "static/media/hitachi.png": "/SmartAC-Controller/static/media/hitachi.1e9a7d9862bd0a441021.png",
+    "static/media/samsung.webp": "/SmartAC-Controller/static/media/samsung.0471fad1096d8082c710.webp",
+    "static/media/panasonic.png": "/SmartAC-Controller/static/media/panasonic.6746e19ff037012eaee6.png",
     "index.html": "/SmartAC-Controller/index.html",
-    "main.0b1e04ab.css.map": "/SmartAC-Controller/static/css/main.0b1e04ab.css.map",
-    "main.1ef0f488.js.map": "/SmartAC-Controller/static/js/main.1ef0f488.js.map"
+    "main.fcd56271.css.map": "/SmartAC-Controller/static/css/main.fcd56271.css.map",
+    "main.55aabdeb.js.map": "/SmartAC-Controller/static/js/main.55aabdeb.js.map"
   },
   "entrypoints": [
-    "static/css/main.0b1e04ab.css",
-    "static/js/main.1ef0f488.js"
+    "static/css/main.fcd56271.css",
+    "static/js/main.55aabdeb.js"
   ]
 }
