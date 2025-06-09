@@ -354,13 +354,13 @@ export default function Home() {
   }, [selectedDevice]);
 
   const debouncedUpdateCallback = useCallback(
-    debounce((newState) => {
+    (newState) => {
       if (!selectedDevice || !user) {
         setError("Please select a device first");
         return;
       }
 
-      const updateState = async () => {
+      const updateState = debounce(async () => {
         try {
           const userDeviceRef = ref(db, `user_devices/${user.uid}/${selectedDevice}`);
           const deviceSnapshot = await get(userDeviceRef);
@@ -395,11 +395,11 @@ export default function Home() {
           console.error("Error updating AC state:", error);
           setError(error.message || "Failed to update AC state");
         }
-      };
+      }, 300);
 
       updateState();
-    }, 300),
-    [selectedDevice, user, setError] // Add setError to dependencies
+    },
+    [selectedDevice, user, setError]
   );
 
   // Handle cleanup of debounced function
