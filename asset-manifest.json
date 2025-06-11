@@ -1,23 +1,23 @@
 {
   "files": {
-    "main.css": "/SmartAC-Controller/static/css/main.fcd56271.css",
-    "main.js": "/SmartAC-Controller/static/js/main.55aabdeb.js",
-    "static/media/Montserrat-ExtraBold.ttf": "/SmartAC-Controller/static/media/Montserrat-ExtraBold.6c8b198832c88c649faa.ttf",
-    "static/media/Montserrat-Bold.ttf": "/SmartAC-Controller/static/media/Montserrat-Bold.50f0257aa1e905f4bfaf.ttf",
-    "static/media/Montserrat-Medium.ttf": "/SmartAC-Controller/static/media/Montserrat-Medium.b8c6753baa964ccac1ba.ttf",
-    "static/media/Montserrat-Regular.ttf": "/SmartAC-Controller/static/media/Montserrat-Regular.24785cc015b27a3e964b.ttf",
-    "static/media/daikin.png": "/SmartAC-Controller/static/media/daikin.3e2abb21595d416693b9.png",
-    "static/media/fujitsu.png": "/SmartAC-Controller/static/media/fujitsu.64e07cad9384530897b9.png",
-    "static/media/gree.png": "/SmartAC-Controller/static/media/gree.40c25a01adf16d206654.png",
-    "static/media/hitachi.png": "/SmartAC-Controller/static/media/hitachi.1e9a7d9862bd0a441021.png",
-    "static/media/samsung.webp": "/SmartAC-Controller/static/media/samsung.0471fad1096d8082c710.webp",
-    "static/media/panasonic.png": "/SmartAC-Controller/static/media/panasonic.6746e19ff037012eaee6.png",
-    "index.html": "/SmartAC-Controller/index.html",
-    "main.fcd56271.css.map": "/SmartAC-Controller/static/css/main.fcd56271.css.map",
-    "main.55aabdeb.js.map": "/SmartAC-Controller/static/js/main.55aabdeb.js.map"
+    "main.css": "/static/css/main.d1dd0d2e.css",
+    "main.js": "/static/js/main.33571374.js",
+    "static/media/Montserrat-ExtraBold.ttf": "/static/media/Montserrat-ExtraBold.6c8b198832c88c649faa.ttf",
+    "static/media/Montserrat-Bold.ttf": "/static/media/Montserrat-Bold.50f0257aa1e905f4bfaf.ttf",
+    "static/media/Montserrat-Medium.ttf": "/static/media/Montserrat-Medium.b8c6753baa964ccac1ba.ttf",
+    "static/media/Montserrat-Regular.ttf": "/static/media/Montserrat-Regular.24785cc015b27a3e964b.ttf",
+    "static/media/daikin.png": "/static/media/daikin.3e2abb21595d416693b9.png",
+    "static/media/fujitsu.png": "/static/media/fujitsu.64e07cad9384530897b9.png",
+    "static/media/gree.png": "/static/media/gree.40c25a01adf16d206654.png",
+    "static/media/hitachi.png": "/static/media/hitachi.1e9a7d9862bd0a441021.png",
+    "static/media/samsung.webp": "/static/media/samsung.0471fad1096d8082c710.webp",
+    "static/media/panasonic.png": "/static/media/panasonic.6746e19ff037012eaee6.png",
+    "index.html": "/index.html",
+    "main.d1dd0d2e.css.map": "/static/css/main.d1dd0d2e.css.map",
+    "main.33571374.js.map": "/static/js/main.33571374.js.map"
   },
   "entrypoints": [
-    "static/css/main.fcd56271.css",
-    "static/js/main.55aabdeb.js"
+    "static/css/main.d1dd0d2e.css",
+    "static/js/main.33571374.js"
   ]
 }
