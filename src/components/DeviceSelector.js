@@ -89,11 +89,9 @@ export default function DeviceSelector({
         return;
       }
 
-      // Add the device to user's device list with initial data
       await set(userDeviceRef, {
         added_at: new Date().toISOString(),
-        device_id: newDeviceId,
-        displayName: newDeviceId, // Initialize display name with device ID
+        displayName: newDeviceId, 
       });
 
       setNewDeviceId("");
