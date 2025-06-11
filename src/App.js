@@ -3,7 +3,7 @@ import AppRoutes from './routes/routes';
 
 function App() {
   return (
-    <Router basename="/SmartAC-Controller">
+    <Router>
       <div className="min-h-screen bg-gray-50">
         <AppRoutes />
       </div>

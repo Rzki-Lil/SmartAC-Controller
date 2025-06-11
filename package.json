@@ -1,8 +1,8 @@
 {
-  "name": "smart-ac-controller",
+  "name": "smartac-controller",
   "version": "0.1.0",
   "private": true,
-  "homepage": "https://Rzki-Lil.github.io/SmartAC-Controller",
+  "homepage": "https://ac.rzkispot.live",
   "dependencies": {
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",

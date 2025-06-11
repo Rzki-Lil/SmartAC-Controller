@@ -46,17 +46,14 @@ static FirebaseJson fbConfigJson;
 // WiFiManager variables
 WiFiManager wifiManager;
 unsigned long wifiConnectionStartTime = 0;
-const unsigned long WIFI_TIMEOUT = 120000; // 2 menit dalam milliseconds
+const unsigned long WIFI_TIMEOUT = 120000; 
 bool portalOpened = false;
 
-// Button variables - simplified for instant reset
 bool lastButtonState = HIGH;
 
-// Konfigurasi waktu NTP yang lebih stabil dengan offset waktu Indonesia UTC+7 (25200 detik)
 WiFiUDP ntpUDP;
 NTPClient timeClient(ntpUDP, "pool.ntp.org", 25200, 60000); // UTC+7 untuk WIB (25200 detik)
 
-// Variabel untuk menangani waktu yang stabil
 unsigned long lastTimeSync = 0;
 const unsigned long TIME_SYNC_INTERVAL = 1800000; // 30 menit
 time_t lastSyncedTime = 0;
@@ -64,15 +61,13 @@ bool timeInitialized = false;
 
 // memformat waktu WIB dengan lebih stabil
 String getFormattedTimeWIB() {
-  char buffer[9]; // HH:MM:SS + null terminator
+  char buffer[9];
   
-  // Gunakan waktu dari TimeLib yang lebih stabil
   if (timeInitialized) {
-    time_t currentTime = now(); // Dari TimeLib
+    time_t currentTime = now(); 
     sprintf(buffer, "%02d:%02d:%02d", hour(currentTime), minute(currentTime), second(currentTime));
     return String(buffer) + " WIB";
   } else {
-    // Fallback ke timeClient jika belum diinisialisasi
     return timeClient.getFormattedTime() + " WIB";
   }
 }
@@ -89,7 +84,6 @@ IRDaikinESP acDaikin(IR_LED);
 IRSamsungAc acSamsung(IR_LED);
 IRFujitsuAC acFujitsu(IR_LED);
 IRHitachiAc acHitachi(IR_LED);
-// Ganti dengan kelas yang benar untuk Panasonic
 IRPanasonicAc acPanasonic(IR_LED, kPanasonicNke);
 
 String currentBrand = "gree"; 
@@ -98,8 +92,7 @@ bool lastPower = false;
 int lastTemp = 25;
 String lastMode = "cool";
 int lastFanSpeed = 1;
-bool lastSwing = false;
-bool smartAC = false;  
+bool lastSwing = false;  
 
 String startTime = "";
 String endTime = "";
@@ -126,17 +119,14 @@ bool parseTimeString(String timeStr, int &hours, int &minutes) {
   return (hours >= 0 && hours < 24 && minutes >= 0 && minutes < 60);
 }
 
-// Fungsi untuk mendapatkan current hour untuk keperluan pemeriksaan jadwal
 int getCurrentHour() {
   return timeInitialized ? hour(now()) : timeClient.getHours();
 }
 
-// Fungsi untuk mendapatkan current minute untuk keperluan pemeriksaan jadwal
 int getCurrentMinute() {
   return timeInitialized ? minute(now()) : timeClient.getMinutes();
 }
 
-// Fungsi untuk mendapatkan epoch time yang stabil untuk timestamp
 uint64_t getStableEpochTime() {
   return timeInitialized ? now() : timeClient.getEpochTime();
 }
@@ -165,7 +155,6 @@ bool isTimeInSchedule() {
     return false;
   }
   
-  // Dapatkan waktu saat ini dengan metode yang lebih stabil
   int currentHour = getCurrentHour();
   int currentMinute = getCurrentMinute();
   
@@ -192,7 +181,6 @@ bool isTimeInSchedule() {
                    currentTotalMinutes <= endTotalMinutes);
   }
   
-  // Selalu cetak perubahan status jadwal
   static bool lastScheduleState = false;
   if (isInSchedule != lastScheduleState) {
     Serial.println("\nStatus jadwal berubah pada " + getFormattedTimeWIB() + ":");
@@ -220,16 +208,13 @@ bool hasScheduleEnded() {
     return false;
   }
   
-  // Menggunakan fungsi pengganti untuk waktu yang stabil
   int currentHour = getCurrentHour();
   int currentMinute = getCurrentMinute();
   
-  // Hitung total menit untuk perbandingan yang tepat
   int currentTotalMinutes = currentHour * 60 + currentMinute;
   int startTotalMinutes = startHour * 60 + startMinute;
   int endTotalMinutes = endHour * 60 + endMinute;
   
-  // Deteksi akhir jadwal yang ditingkatkan dengan presisi 1 menit
   bool hasEnded = false;
   
   if (endTotalMinutes < startTotalMinutes) {
@@ -263,26 +248,17 @@ void applySchedule() {
   if (scheduleEnded) {
     Serial.println("PENTING: Jadwal telah berakhir - mematikan AC sekarang");
     
-    // Matikan AC dan SmartAC
     lastPower = false;
     
-    if (smartAC) {
-      Serial.println("Jadwal berakhir - juga mematikan SmartAC");
-      smartAC = false;
-    }
-    
-    // Terapkan pengaturan
     applyACSettings();
     
-    // Perbarui Firebase dengan timestamp yang stabil
     FirebaseJson json;
     json.set("power", false);
-    json.set("smartAC", false);
     json.set("timestamp", (uint64_t)getStableEpochTime());
     
     String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
     if (Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &json)) {
-      Serial.println("Firebase diperbarui - AC dan SmartAC dimatikan karena akhir jadwal");
+      Serial.println("Firebase diperbarui - AC dimatikan karena akhir jadwal");
       resetSchedulePending = true;
     } else {
       Serial.println("Gagal memperbarui Firebase: " + fbdoConfig.errorReason());
@@ -298,39 +274,24 @@ void applySchedule() {
     Serial.println("  Saat ini: " + String(shouldBeOn ? "ON" : "OFF"));
     
     if (shouldBeOn && !lastPower) {
-      // Nyalakan
       lastPower = true;
-      
-      // Ketika jadwal menyalakan AC, pastikan SmartAC tetap OFF
-      smartAC = false;
       
       applyACSettings();
       
-      // Perbarui Firebase
       FirebaseJson json;
       json.set("power", lastPower);
-      json.set("smartAC", false); 
       json.set("timestamp", (uint64_t)timeClient.getEpochTime());
       String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
       Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &json);
       
-      Serial.println("Jadwal menyalakan AC - SmartAC secara eksplisit tetap OFF");
+      Serial.println("Jadwal menyalakan AC");
     }
     else if (!shouldBeOn && lastPower) {
-      // Matikan
       lastPower = false;
       
-      // matikan SmartAC
-      if (smartAC) {
-        Serial.println("Jadwal berakhir - juga mematikan SmartAC");
-        smartAC = false;
-      }
-      
       applyACSettings();
-      // Perbarui Firebase
       FirebaseJson json;
       json.set("power", lastPower);
-      json.set("smartAC", smartAC);
       json.set("timestamp", (uint64_t)timeClient.getEpochTime());
       String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
       Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &json);
@@ -380,7 +341,6 @@ void checkScheduleSettings() {
       updateDisplayState("schedule", "");
     }
     
-    // Hanya cetak jika pengaturan berubah
     if (settingsChanged) {
       Serial.println("Pengaturan jadwal diperbarui:");
       Serial.println("  Diaktifkan: " + String(scheduleEnabled ? "YA" : "TIDAK"));
@@ -389,7 +349,6 @@ void checkScheduleSettings() {
     }
   }
 }
-
 
 void resetScheduleSettings() {
   if (!resetSchedulePending) return;
@@ -400,15 +359,11 @@ void resetScheduleSettings() {
   endTime = "00:00";
   scheduleEnabled = false;
   resetSchedulePending = false;
-  smartAC = false; // Selalu pastikan SmartAC mati selama reset
   
   FirebaseJson json;
   json.set("startTime", "00:00");  
   json.set("endTime", "00:00");  
   json.set("scheduleEnabled", false);
-  json.set("smartAC", false);
-  
-  Serial.println("SmartAC dimatikan sebagai bagian dari reset jadwal");
   
   for (int retry = 0; retry < 3; retry++) {
     String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
@@ -426,7 +381,6 @@ void resetScheduleSettings() {
   resetSchedulePending = true;
 }
 
-// Optimalkan fungsi handleACControl untuk menghindari kode yang berlebihan
 void handleACControl(FirebaseJson &json) {
   FirebaseJsonData result;
   bool stateChanged = false;
@@ -436,6 +390,7 @@ void handleACControl(FirebaseJson &json) {
   if (result.success && result.to<String>() != currentBrand) {
     currentBrand = result.to<String>();
     Serial.println("Merek berubah menjadi: " + currentBrand);
+    updateDisplayState("brand", currentBrand);
     stateChanged = true;
   }
 
@@ -443,18 +398,6 @@ void handleACControl(FirebaseJson &json) {
   if (result.success && result.to<bool>() != lastPower) {
     lastPower = result.to<bool>();
     updateDisplayState("power", lastPower ? "ON" : "OFF");
-  
-    // Jika daya dimatikan, juga matikan SmartAC
-    if (!lastPower && smartAC) {
-      Serial.println("Daya dimatikan - secara otomatis menonaktifkan SmartAC");
-      smartAC = false;
-
-      FirebaseJson updateJson;
-      updateJson.set("smartAC", false);
-      String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
-      Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &updateJson);
-    }
-    
     stateChanged = true;
     Serial.println("Daya: " + String(lastPower ? "ON" : "OFF"));
   }
@@ -511,38 +454,6 @@ void handleACControl(FirebaseJson &json) {
     Serial.println("Swing: " + String(lastSwing ? "ON" : "OFF"));
   }
 
-
-  json.get(result, "smartAC");
-  if (result.success) {
-    bool newSmartAC = result.to<bool>();
-    
-
-    bool isScheduleOn = scheduleEnabled && isTimeInSchedule();
-    
-    if (isScheduleOn && newSmartAC) {
-
-      smartAC = false;
-
-      FirebaseJson updateJson;
-      updateJson.set("smartAC", false);
-      String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
-      Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &updateJson);
-    }
-    // Hanya izinkan SmartAC untuk ON jika daya juga ON dan tidak dalam jadwal
-    else if (!lastPower && newSmartAC) {
-
-      smartAC = false;
-
-      FirebaseJson updateJson;
-      updateJson.set("smartAC", false);
-      String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
-      Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &updateJson);
-    } else if (newSmartAC != smartAC) {
-      smartAC = newSmartAC;
-      Serial.println("SmartAC: " + String(smartAC ? "ON" : "OFF"));
-    }
-  }
-
   if (stateChanged) {
     applyACSettings();
   }
@@ -571,7 +482,6 @@ void applyACSettings() {
   }
   else if (currentBrand == "fujitsu"){
     acFujitsu.begin();
-    // Fix Fujitsu fan control by using stepFan() method
     acFujitsu.setFanSpeed(lastFanSpeed);
     acFujitsu.setMode(convertMode("fujitsu", lastMode));
     acFujitsu.setTemp(lastTemp);
@@ -608,26 +518,23 @@ void applyACSettings() {
     }
     else if (currentBrand == "fujitsu"){
       acFujitsu.on();
-      // Fix Fujitsu swing control
       acFujitsu.setSwing(lastSwing ? kFujitsuAcSwingVert : kFujitsuAcSwingOff);
       acFujitsu.send();
       Serial.println("Mengirim perintah Fujitsu");
     }
     else if (currentBrand == "hitachi"){
       acHitachi.on();
-      // Fix Hitachi swing implementation - it uses setSwingVertical instead of setSwing
       acHitachi.setSwingVertical(lastSwing);
       acHitachi.send();
       Serial.println("Mengirim perintah Hitachi");
     }
     else if (currentBrand == "panasonic"){
       acPanasonic.on();
-      // Fix Panasonic swing constants
       acPanasonic.setSwingVertical(lastSwing ? kPanasonicAcSwingVAuto : kPanasonicAcSwingVLow);
       acPanasonic.send();
       Serial.println("Mengirim perintah Panasonic");
     }
-    // Tambahkan
+    // Tambah
   } else {
     if (currentBrand == "gree") {
       acGree.off();
@@ -653,7 +560,7 @@ void applyACSettings() {
       acPanasonic.off();
       acPanasonic.send();
     }
-    // Tambahkan
+    // Tambah
   }
   
   blinkLED();
@@ -661,7 +568,6 @@ void applyACSettings() {
   printState();
 }
 
-// Fungsi untuk menginisialisasi semua objek AC
 void initializeACs() {
   // Gree
   acGree.begin();
@@ -681,7 +587,6 @@ void initializeACs() {
   acSamsung.setTemp(25);
 
   acFujitsu.begin();
-  // Remove setCmd and use proper fan speed setting
   acFujitsu.setFanSpeed(kFujitsuAcFanHigh);
   acFujitsu.setMode(kFujitsuAcModeCool);
   acFujitsu.setTemp(25);
@@ -698,7 +603,6 @@ void initializeACs() {
   // ...
 }
 
-// Konversi mode umum ke mode khusus merek
 int convertMode(String brand, String genericMode) {
   if (brand == "gree") {
     if (genericMode == "cool") return kGreeCool;
@@ -742,11 +646,10 @@ int convertMode(String brand, String genericMode) {
     if (genericMode == "dry") return kPanasonicAcDry;
     if (genericMode == "auto") return kPanasonicAcAuto;
   }
-  // Tambahkan
+  // Tambah
   return -1; 
 }
 
-// Konversi kecepatan kipas umum ke kecepatan kipas khusus merek
 int convertFanSpeed(String brand, int genericSpeed) {
   if (brand == "gree") {
     switch(genericSpeed) {
@@ -774,7 +677,7 @@ int convertFanSpeed(String brand, int genericSpeed) {
   }
   else if (brand == "fujitsu") {
     switch(genericSpeed) {
-      case 1: return kFujitsuAcFanHigh; // Sesuaikan dengan level yang benar
+      case 1: return kFujitsuAcFanHigh; 
       case 2: return kFujitsuAcFanMed;
       case 3: return kFujitsuAcFanHigh;
       default: return kFujitsuAcFanAuto;
@@ -796,7 +699,7 @@ int convertFanSpeed(String brand, int genericSpeed) {
       default: return kPanasonicAcFanAuto;
     }
   }
-  // Tambahkan 
+  // Tambah
   return -1; 
 }
 
@@ -826,19 +729,19 @@ unsigned long lastDisplayUpdate = 0;
 
 unsigned long lastStateChange = 0;
 const long STATE_CHANGE_DURATION = 3000;
-String currentDisplayState = "temp"; // Status default
+String currentDisplayState = "temp"; 
 String lastChangedValue = "";
 
-bool showTemperature = true; // Mulai dengan tampilan suhu
+bool showTemperature = true; 
 unsigned long lastDisplayToggle = 0;
-const long DISPLAY_TOGGLE_INTERVAL = 10000; // Bergantian antara suhu/kelembaban setiap 10 detik
+const long DISPLAY_TOGGLE_INTERVAL = 10000; 
 
 DHT dht(DHTPIN, DHTTYPE);
 float currentTemp = 0;
 float currentHumidity = 0; 
 unsigned long lastTempHumidityUpload = 0;
 const long TEMP_READ_INTERVAL = 5000; 
-const long TEMP_HUMIDITY_UPLOAD_INTERVAL = 180000; // Perbarui Firebase setiap 3 menit
+const long TEMP_HUMIDITY_UPLOAD_INTERVAL = 180000; 
 
 void formatScheduleDisplay() {
   display.clearDisplay();
@@ -917,6 +820,39 @@ void formatHumidityDisplay(float humidity) {
   display.display();
 }
 
+void formatBrandDisplay() {
+  display.clearDisplay();
+  display.setRotation(2);
+  display.setTextColor(SSD1306_WHITE);
+  
+  display.setTextSize(1);
+  display.setCursor(0,0);
+  display.println(getFormattedTimeWIB());
+  
+  display.setTextSize(1);
+  display.setCursor(45, 16);
+  display.print("BRAND");
+  
+  String brandDisplay = currentBrand;
+  brandDisplay.toUpperCase();
+  
+  if (brandDisplay.length() <= 5) {
+    display.setTextSize(3);
+  } else if (brandDisplay.length() <= 8) {
+    display.setTextSize(2);
+  } else {
+    display.setTextSize(1);
+  }
+  
+  int16_t x1, y1;
+  uint16_t w, h;
+  display.getTextBounds(brandDisplay, 0, 0, &x1, &y1, &w, &h);
+  display.setCursor((SCREEN_WIDTH - w) / 2, (SCREEN_HEIGHT - h) / 2 + 5);
+  display.print(brandDisplay);
+  
+  display.display();
+}
+
 void updateOLEDDisplay() {
   unsigned long currentMillis = millis();
   
@@ -946,6 +882,9 @@ void updateOLEDDisplay() {
       }
       else if (currentDisplayState == "power") {
         formatPowerDisplay();
+      }
+      else if (currentDisplayState == "brand") {
+        formatBrandDisplay();
       }
       else {
         display.clearDisplay();
@@ -1055,7 +994,6 @@ void initializeDeviceStructure() {
   deviceJson.set("ac_control/power", true);
   deviceJson.set("ac_control/scheduleEnabled", false);
   deviceJson.set("ac_control/selectedBrand", "gree");
-  deviceJson.set("ac_control/smartAC", false);
   deviceJson.set("ac_control/startTime", "00:00");
   deviceJson.set("ac_control/swing", false);
   deviceJson.set("ac_control/temperature", 25);
@@ -1067,7 +1005,6 @@ void initializeDeviceStructure() {
   String devicePath = "devices/" + String(DEVICE_ID);
   
   if (!Firebase.RTDB.getJSON(&fbdoConfig, devicePath)) {
-    // Device structure doesn't exist, create it
     if (Firebase.RTDB.setJSON(&fbdoConfig, devicePath, &deviceJson)) {
       Serial.println("Device structure initialized successfully");
     } else {
@@ -1106,9 +1043,7 @@ bool syncTimeFromNTP() {
 }
 
 void setupWiFiManager() {
-  // Set button pin as input with pullup
   pinMode(RESET_BUTTON_PIN, INPUT_PULLUP);
-  
   // WiFiManager setup
   wifiManager.setDebugOutput(true);
   wifiManager.setAPStaticIPConfig(IPAddress(192,168,1,1), IPAddress(192,168,1,1), IPAddress(255,255,255,0));
@@ -1180,11 +1115,9 @@ void setup() {
     display.println("   192.168.1.1");
     display.display();
     
-    // Start config portal with password
     if (!wifiManager.startConfigPortal("SmartAC-Setup", "12345678")) {
       Serial.println("Gagal memulai config portal");
       
-      // Show failure message
       display.setRotation(2);
       display.clearDisplay();
       display.setTextColor(SSD1306_WHITE);
@@ -1203,7 +1136,6 @@ void setup() {
     
     Serial.println("WiFi berhasil dikonfigurasi!");
     
-    // Show success message
     display.setRotation(2);
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
@@ -1222,7 +1154,6 @@ void setup() {
   timeClient.begin();
   Serial.println("Memulai sinkronisasi waktu NTP...");
 
-  // Percobaan sinkronisasi waktu dengan retry yang lebih baik
   bool ntpSuccess = false;
   for (int i = 0; i < 5; i++) {  
     Serial.print("Percobaan sinkronisasi NTP ");
@@ -1315,8 +1246,6 @@ void setup() {
     acFujitsu.begin();
     acFujitsu.setMode(kFujitsuAcModeCool);
     acFujitsu.setTemp(25);
-    // Ganti setFan dengan metode yang tepat
-    //acFujitsu.setFan(kFujitsuAcFanAuto);
     acFujitsu.setFanSpeed(kFujitsuAcFanHigh);
     acFujitsu.send();
   }
@@ -1348,16 +1277,10 @@ void setup() {
     }
   }
 
-  // Display sudah diinisialisasi di awal, tidak perlu lagi
   Serial.println("Display sudah siap, melanjutkan setup sensor...");
 
   dht.begin();
 
-  if (Firebase.RTDB.getBool(&fbdoConfig, "/ac_control/smartAC")) {
-    smartAC = fbdoConfig.boolData();
-  }
-
-  
   if (Firebase.RTDB.getString(&fbdoConfig, "/ac_control/selectedBrand")) {
     currentBrand = fbdoConfig.stringData();
     Serial.println("Merek AC awal: " + currentBrand);
@@ -1373,7 +1296,7 @@ void handleFirebaseStream() {
     if (Firebase.ready() && firebaseReady) {
         if (!Firebase.RTDB.readStream(&fbdo)) {
             Serial.println("Pembacaan stream gagal: " + fbdo.errorReason());
-            delay(50); // Penundaan singkat pada kesalahan
+            delay(50);
             lastStreamRead = currentMillis;
             return;
         }
@@ -1391,18 +1314,15 @@ void handleFirebaseStream() {
 
 void handleWiFiConnection() {
   static unsigned long lastWiFiCheck = 0;
-  static bool lastWiFiState = true; // Track previous WiFi state
+  static bool lastWiFiState = true; 
   unsigned long currentMillis = millis();
   
-  // Check WiFi status every 10 seconds
   if (currentMillis - lastWiFiCheck >= 10000) {
     bool currentWiFiState = (WiFi.status() == WL_CONNECTED);
     
-    // Show WiFi disconnection on OLED if state changed
     if (lastWiFiState && !currentWiFiState) {
       Serial.println("WiFi terputus...");
       
-      // Display WiFi disconnected message
       display.setRotation(2);
       display.clearDisplay();
       display.setTextColor(SSD1306_WHITE);
@@ -1448,7 +1368,6 @@ void handleWiFiConnection() {
         if (!wifiManager.startConfigPortal("SmartAC-Setup", "12345678")) {
           Serial.println("Gagal memulai config portal");
           
-          // Show portal failed message
           display.setRotation(2);
           display.clearDisplay();
           display.setTextColor(SSD1306_WHITE);
@@ -1466,11 +1385,9 @@ void handleWiFiConnection() {
         }
       }
     } else {
-      // WiFi connected, reset timer
       wifiConnectionStartTime = currentMillis;
       portalOpened = false;
       
-      // Show WiFi reconnected message if state changed
       if (!lastWiFiState && currentWiFiState) {
         Serial.println("WiFi terhubung kembali!");
         
@@ -1485,7 +1402,7 @@ void handleWiFiConnection() {
         display.println("");
         display.println("IP: " + WiFi.localIP().toString());
         display.display();
-        delay(2000); // Show for 2 seconds
+        delay(2000); 
       }
     }
     
@@ -1498,13 +1415,11 @@ bool connectWiFiWithManager() {
   Serial.println("Mencoba koneksi WiFi...");
   wifiConnectionStartTime = millis();
   
-  // Coba koneksi otomatis dulu
   if (wifiManager.autoConnect("SmartAC-Setup", "12345678")) {
     Serial.println("WiFi terhubung!");
     Serial.println("IP Address: " + WiFi.localIP().toString());
     portalOpened = false;
     
-    // Show successful connection on OLED
     display.setRotation(2);
     display.clearDisplay();
     display.setTextColor(SSD1306_WHITE);
@@ -1516,12 +1431,11 @@ bool connectWiFiWithManager() {
     display.println("");
     display.println("IP: " + WiFi.localIP().toString());
     display.display();
-    delay(2000); // Show for 2 seconds
+    delay(2000); 
     
     return true;
   }
   
-  // Jika autoConnect gagal, tampilkan pesan di OLED
   Serial.println("Tidak ada WiFi tersimpan atau koneksi gagal");
   
   display.setRotation(2);
@@ -1589,16 +1503,6 @@ void handleStateChecks() {
       resetScheduleSettings();
     }
     
-    if (smartAC && !lastPower) {
-      Serial.println("Status tidak konsisten terdeteksi: SmartAC ON tetapi daya OFF");
-      smartAC = false;
-      
-      fbConfigJson.clear();
-      fbConfigJson.set("smartAC", false);
-      String controlPath = "devices/" + String(DEVICE_ID) + "/ac_control";
-      Firebase.RTDB.updateNode(&fbdoConfig, controlPath, &fbConfigJson);
-    }
-    
     lastCheckTime = currentMillis;
   }
 }
@@ -1606,7 +1510,6 @@ void handleStateChecks() {
 void handleTimeSync() {
   unsigned long currentMillis = millis();
   
-  // Sinkronisasi ulang waktu setiap interval tertentu
   if (currentMillis - lastTimeSync >= TIME_SYNC_INTERVAL || !timeInitialized) {
     if (syncTimeFromNTP()) {
       lastTimeSync = currentMillis;
